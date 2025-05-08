@@ -45,4 +45,9 @@ FIELD_MAPPING = {
     "coordinates": "coordinates_utm"
 }
 
-SCAN_INTERVAL = timedelta(hours=1) 
+SCAN_INTERVAL = timedelta(hours=1)
+
+POLLUTANT_MAPPING = {
+    "NO2": "Nitrogen Dioxide (NO2)",
+    "PM2_5": "Particulate Matter < 2.5μm (PM2.5)"
+}

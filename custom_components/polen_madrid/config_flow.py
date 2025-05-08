@@ -1,26 +1,27 @@
+"""Config flow for Polen Madrid."""
 from __future__ import annotations
 
-"""Config flow for Polen Madrid."""
-import logging
 import json
-import requests
-from requests.exceptions import RequestException
+import logging
 
+import requests
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
+from requests.exceptions import RequestException
 
 from .const import (
-    DOMAIN,
-    CONF_STATIONS,
-    API_URL,
-    API_HEADERS,
     API_DATA_PAYLOAD,
+    API_HEADERS,
+    API_URL,
+    CONF_STATIONS,
+    DOMAIN,
     FIELD_MAPPING,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
 
 def _fix_encoding_issue(text: str) -> str:
     """Fix encoding issues for text."""
@@ -31,14 +32,17 @@ def _fix_encoding_issue(text: str) -> str:
             return text
     return text
 
+
 def _get_raw_key_for_value(value_to_find: str) -> str | None:
     for raw_key, mapped_value in FIELD_MAPPING.items():
         if mapped_value == value_to_find:
             return raw_key
     return None
 
+
 RAW_STATION_ID_KEY = _get_raw_key_for_value("station_id")
 RAW_STATION_NAME_KEY = _get_raw_key_for_value("location_name")
+
 
 class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Polen Madrid."""
@@ -136,7 +140,7 @@ class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(_config_entry):
+    def async_get_options_flow(_config_entry: config_entries.ConfigEntry):
         """Get the options flow for this handler."""
         return PolenMadridOptionsFlowHandler(_config_entry)
 
@@ -146,6 +150,7 @@ class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
+        self.config_entry = config_entry
         self._stations: dict[str, str] | None = None # Cache fetched stations
 
     async def _fetch_stations_for_options(self) -> bool:
@@ -229,4 +234,4 @@ class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=options_schema,
             errors=errors
-        ) 
+        )
