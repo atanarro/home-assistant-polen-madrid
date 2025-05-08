@@ -3,33 +3,11 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import Platform
-from homeassistant.helpers import config_validation as cv
-import voluptuous as vol
 
 from .const import DOMAIN
 
-# Define an empty schema for the domain. This tells HA that `polen_madrid:` is valid in YAML.
-CONFIG_SCHEMA = vol.Schema({DOMAIN: cv.deprecated(DOMAIN)}, extra=vol.ALLOW_EXTRA)
-
-
 # List of platforms to support. There is only one platform (sensor) in this case.
 PLATFORMS: list[Platform] = [Platform.SENSOR]
-
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the Polen Madrid component from YAML configuration."""
-    # Check if an entry for this domain already exists.
-    # This prevents creating duplicate entries if already set up via UI (once we add config flow)
-    # or if HA is restarted.
-    if not hass.config_entries.async_entries(DOMAIN):
-        # Create a new config entry.
-        # We pass an empty dictionary for data and unique_id=DOMAIN as this integration
-        # doesn't have specific configuration options from YAML for now.
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN, context={"source": "import"}, data={}
-            )
-        )
-    return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Polen Madrid from a config entry."""

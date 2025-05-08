@@ -1,10 +1,12 @@
 {
   "domain": "polen_madrid",
-  "name": "Polen Comunidad deMadrid",
+  "name": "Polen Comunidad de Madrid",
   "documentation": "https://github.com/atanarro/home-assistant-polen-madrid",
+  "issue_tracker": "https://github.com/atanarro/home-assistant-polen-madrid/issues",
   "dependencies": [],
   "codeowners": ["@atanarro"],
   "requirements": ["requests"],
   "iot_class": "cloud_polling",
+  "config_flow": true,
   "version": "0.1.0"
 } 

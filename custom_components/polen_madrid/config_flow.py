@@ -39,18 +39,6 @@ class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # If you wanted options, you would define a class here.
         return PolenMadridOptionsFlowHandler(config_entry)
 
-    async def async_step_import(self, import_config=None):
-        """Handle a flow initialized by import from configuration.yaml."""
-        _LOGGER.debug(f"Starting import step for Polen Madrid with config: {import_config}")
-        # Check if an instance is already configured
-        if self._async_current_entries():
-            _LOGGER.debug("Polen Madrid already configured, aborting import.")
-            return self.async_abort(reason="single_instance_allowed")
-        
-        _LOGGER.debug("Creating config entry for Polen Madrid from YAML import.")
-        # Data is empty as this integration takes no config from YAML directly for the entry
-        return self.async_create_entry(title="Polen Madrid (YAML)", data={})
-
 
 class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle an options flow for Polen Madrid."""

@@ -62,7 +62,6 @@ Each sensor will have a state representing the pollen value (typically in grains
 
 ## Development
 
-*   **API Endpoint**: `https://idem.comunidad.madrid/geoserver3/wfs?version=2.0.0&request=GetFeature&typeName=SPOL_V_CAPTADORES_GIS`
 *   **Data Update Interval**: Data is fetched every hour by default (defined by `SCAN_INTERVAL` in `sensor.py`).
 
 ## Contributing
