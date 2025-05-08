@@ -59,3 +59,23 @@ After initial setup, you can change the selected stations:
 *   Ensure you have the latest version of the integration.
 *   Check the Home Assistant logs (Settings -> System -> Logs) for any errors related to `polen_madrid`.
 *   If you encounter issues, please [open an issue](https://github.com/atanarro/home-assistant-polen-madrid/issues) on GitHub.
+
+## Example Lovelace UI Gauge
+
+Here's an example of how you can display a pollen sensor using a Lovelace gauge card:
+
+```yaml
+type: gauge
+entity: sensor.polen_madrid_arganzuela_gramineas # Replace with your specific sensor
+name: Gramíneas Arganzuela
+unit: 'g/m³'
+min: 0
+max: 75 # Adjust as needed, consider very_high_threshold if available
+severity:
+  green: 0
+  yellow: 26 # Corresponds to medium_threshold from sensor attributes
+  red: 53    # Corresponds to high_threshold from sensor attributes
+needle: true # Optional
+```
+
+Replace `sensor.polen_madrid_arganzuela_gramineas` with the actual entity ID of the sensor you want to display. The `medium_threshold` and `high_threshold` values in the `severity` section should ideally match the attributes of your specific sensor for accurate color representation.

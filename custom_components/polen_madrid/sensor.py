@@ -277,7 +277,8 @@ class PolenMadridSensor(CoordinatorEntity, SensorEntity):
         attrs['pollen_value'] = value
         attrs['medium_threshold'] = medium_threshold
         attrs['high_threshold'] = high_threshold
-        attrs['very_high_threshold'] = self._record.get('very_high_threshold')
+        # commented as it is always 0
+        # attrs['very_high_threshold'] = self._record.get('very_high_threshold')
         attrs['measurement_date'] = self._record.get('measurement_date')
         attrs['station_code'] = self._record.get('station_code')
         attrs['station_id'] = self._station_id
