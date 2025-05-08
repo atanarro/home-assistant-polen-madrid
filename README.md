@@ -18,19 +18,7 @@ This component fetches pollen data for various stations and pollen types provide
 
 ## Configuration
 
-This integration can be configured via `configuration.yaml` or through the UI (recommended once YAML setup is complete).
-
-**1. YAML Configuration (Initial Setup):**
-
-Add the following to your `configuration.yaml` file:
-
-```yaml
-polen_madrid:
-```
-
-After adding this and restarting Home Assistant, the integration should automatically set itself up. You will likely see a notification about `polen_madrid` using a deprecated YAML configuration method, which is expected as the component is designed to transition to UI-based setup.
-
-**2. UI Configuration (Post-YAML Setup or Direct):**
+This integration can be configured through the UI:
 
 Once the YAML entry has been processed (or if you remove the YAML entry after the first setup), you can manage the integration via the UI.
 

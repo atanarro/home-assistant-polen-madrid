@@ -1,6 +1,5 @@
 """Sensor platform for Polen Madrid integration."""
 import logging
-from datetime import timedelta
 import json
 
 import requests # This will be made async later
@@ -20,40 +19,17 @@ from homeassistant.helpers.update_coordinator import (
 )
 from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    API_URL,
+    API_HEADERS,
+    API_DATA_PAYLOAD,
+    FIELD_MAPPING,
+    SCAN_INTERVAL,
+    CONF_STATIONS,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
-# Constants from download_script.py
-API_URL = 'https://idem.comunidad.madrid/geoserver3/wfs?version=2.0.0&request=GetFeature&typeName=SPOL_V_CAPTADORES_GIS'
-API_HEADERS = {
-    "accept": "*/*",
-    "cache-control": "no-cache",
-    "content-type": "application/x-www-form-urlencoded",
-    "pragma": "no-cache",
-}
-API_DATA_PAYLOAD = 'SRS=EPSG%3A25830&outputFormat=application%2Fjson&Filter=%3CFilter%20xmlns%3Agml%3D%22http%3A%2F%2Fwww.opengis.net%2Fgml%22%3E%3CIntersects%3E%3CPropertyName%3EGEOMETRY1%3C%2FPropertyName%3E%3Cgml%3APolygon%20srsName%3D%22urn%3Ax-ogc%3Adef%3Acrs%3AEPSG%3A25830%22%3E%3Cexterior%3E%3CLinearRing%3E%3CposList%20srsDimension%3D%222%22%3E450672.7187693954%204558092.8707015915%20361394.26973231026%204458418.985817723%20450061.222543114%204423869.449032824%20496229.18762736%204440379.847142422%20458316.4215979129%204514370.890522472%20467488.864992134%204544945.701836541%20450672.7187693954%204558092.8707015915%3C%2FposList%3E%3C%2FLinearRing%3E%3C%2Fexterior%3E%3C%2Fgml%3APolygon%3E%3C%2FIntersects%3E%3C%2FFilter%3E'
-
-# Field mapping (combined from both scripts, assuming they are identical or taking one as primary)
-FIELD_MAPPING = {
-    "NM_ID_CAPTADORES": "station_id",
-    "CD_CAPTADORES": "station_code",
-    "DS_NOMBRE": "location_name",
-    "NM_LONGITUD": "longitude_utm",
-    "NM_LATITUD": "latitude_utm",
-    "NM_ALTITUD": "altitude",
-    "NM_ALTURA": "sensor_height",
-    "FC_FECHA_MEDICION": "measurement_date",
-    "NM_VALOR": "pollen_value",
-    "CD_MATERIAS": "pollen_code",
-    "DS_MATERIAS": "pollen_type",
-    "NM_ALTO": "high_threshold",
-    "NM_MEDIO": "medium_threshold",
-    "NM_MUYALTO": "very_high_threshold",
-    "coordinates": "coordinates_utm"
-}
-
-SCAN_INTERVAL = timedelta(hours=1) # Define how often to fetch new data
 
 # Helper function from download_script.py
 def parse_api_response(json_data):
@@ -113,34 +89,53 @@ async def async_setup_entry(
 ) -> None:
     """Set up Polen Madrid sensors from a config entry."""
     _LOGGER.debug("Setting up Polen Madrid sensor platform.")
+    
+    # Get selected stations from config entry options or data
+    selected_stations = entry.options.get(CONF_STATIONS, entry.data.get(CONF_STATIONS))
+    if selected_stations is None: # Ensure it's a list if not found or explicitly None
+        selected_stations = []
+
+    _LOGGER.debug(f"Configured stations for Polen Madrid: {selected_stations}")
+    
+    if not selected_stations:
+        _LOGGER.warning("No stations configured for Polen Madrid. No sensors will be created. Please configure stations in the integration options.")
+        async_add_entities([])
+        return
+
     coordinator = PolenMadridDataUpdateCoordinator(hass)
     await coordinator.async_config_entry_first_refresh()
-    _LOGGER.debug(f"Coordinator data after first refresh: {coordinator.data}")
+    _LOGGER.debug(f"Coordinator data after first refresh: {len(coordinator.data) if coordinator.data else 0} records")
 
     sensors = []
     if coordinator.data:
-        _LOGGER.debug(f"Coordinator.data is available. Number of records: {len(coordinator.data)}")
-        for record in coordinator.data.values():
+        _LOGGER.debug(f"Coordinator.data is available. Processing {len(coordinator.data)} records for selected stations.")
+        for record_key, record in coordinator.data.items():
             station_id = record.get('station_id')
+            
+            # Filter by selected stations
+            # Ensure station_id is string for comparison, as selected_stations contains strings
+            if str(station_id) not in selected_stations:
+                continue
+
             pollen_code = record.get('pollen_code')
             location_name = record.get('location_name')
             pollen_type = record.get('pollen_type')
 
             if station_id and pollen_code and location_name and pollen_type:
-                _LOGGER.debug(f"Creating sensor for: {location_name} - {pollen_type} (ID: {station_id}, Code: {pollen_code})")
+                _LOGGER.debug(f"Creating sensor for selected station: {location_name} - {pollen_type} (ID: {station_id}, Code: {pollen_code})")
                 sensors.append(PolenMadridSensor(coordinator, station_id, pollen_code, location_name, pollen_type))
             else:
-                _LOGGER.warning(f"Skipping sensor creation due to missing key fields in record: {record}")
+                _LOGGER.warning(f"Skipping sensor creation due to missing key fields in record for station {station_id}: {record}")
     else:
         _LOGGER.warning("Coordinator.data is None or empty after refresh. No sensors will be created.")
 
     if sensors:
-        _LOGGER.info(f"Adding {len(sensors)} Polen Madrid sensors to Home Assistant.")
+        _LOGGER.info(f"Adding {len(sensors)} Polen Madrid sensors to Home Assistant for the selected stations.")
     else:
-        _LOGGER.warning("No Polen Madrid sensors were created to add.")
+        _LOGGER.warning("No Polen Madrid sensors were created to add for the selected stations.")
         
     async_add_entities(sensors)
-    _LOGGER.debug("Finished setting up Polen Madrid sensor platform.")
+    _LOGGER.debug("Finished setting up Polen Madrid sensor platform for selected stations.")
 
 class PolenMadridDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching Polen Madrid data."""
@@ -155,7 +150,7 @@ class PolenMadridDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             # Define a helper function to pass to async_add_executor_job
             def _blocking_post_request():
-                return requests.post(API_URL, headers=API_HEADERS, data=API_DATA_PAYLOAD)
+                return requests.post(API_URL, headers=API_HEADERS, data=API_DATA_PAYLOAD, timeout=10)
 
             # Use hass.async_add_executor_job to run the blocking request
             response = await self.hass.async_add_executor_job(_blocking_post_request)
@@ -203,8 +198,8 @@ class PolenMadridDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.error(f"Timeout Error: {errt}")
             raise UpdateFailed(f"Timeout connecting to API: {errt}")
         except requests.exceptions.RequestException as err:
-            _LOGGER.error(f"OOps: Something Else: {err}")
-            raise UpdateFailed(f"An unexpected error occurred: {err}")
+            _LOGGER.error(f"Request Error: {err}")
+            raise UpdateFailed(f"An unexpected error occurred with the request: {err}")
         except json.JSONDecodeError as j_err:
             _LOGGER.error(f"Failed to decode JSON response: {j_err}")
             _LOGGER.debug(f"Response text that failed to parse: {response.text if 'response' in locals() else 'Response object not available'}")
@@ -242,7 +237,9 @@ class PolenMadridSensor(CoordinatorEntity, SensorEntity):
     @property
     def _record(self):
         """Helper to get the specific record for this sensor from coordinator data."""
-        return self.coordinator.data.get((self._station_id, self._pollen_code))
+        if self.coordinator.data:
+            return self.coordinator.data.get((self._station_id, self._pollen_code))
+        return None
 
     @property
     def native_value(self):
