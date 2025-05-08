@@ -32,5 +32,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
-    _LOGGER.debug(f"Polen Madrid options updated for entry {entry.entry_id}, reloading integration.")
-    await hass.config_entries.async_reload(entry.entry_id) 
+    _LOGGER.debug(
+        "Polen Madrid options updated for entry %s, reloading integration.",
+        entry.entry_id
+    )
+    await hass.config_entries.async_reload(entry.entry_id)
