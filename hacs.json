@@ -1,8 +1,5 @@
 {
   "name": "Polen Madrid",
-  "content_in_root": false,
-  "domains": ["polen_madrid"],
-  "country": ["ES"],
-  "render_readme": true,
-  "iot_class": "cloud_polling"
+  "homeassistant": "2023.1.0",
+  "render_readme": true
 } 

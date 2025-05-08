@@ -1,68 +1,61 @@
-# Polen Madrid - Home Assistant Custom Component
+# Polen Madrid - Home Assistant Integration
 
-[![GitHub Release][releases-shield]][releases]
-[![License][license-shield]][license]
+This Home Assistant custom integration retrieves pollen levels for various monitoring stations in the Community of Madrid, Spain.
 
-Integrates pollen level data from the Comunidad de Madrid with Home Assistant.
+Data is sourced from the [Polen | Comunidad de Madrid](https://www.comunidad.madrid/servicios/salud/polen).
 
-This component fetches pollen data for various stations and pollen types provided by the [Comunidad de Madrid: Polen y Salud](https://www.comunidad.madrid/servicios/salud/polen) and creates sensors for each combination in Home Assistant.
+## Features
+
+*   Provides sensor entities for pollen levels (value and type) for user-selected monitoring stations.
+*   Each station's sensors are grouped as a device in Home Assistant.
+*   Attributes include pollen level (Bajo, Medio, Alto), measurement date, thresholds, and station details.
+*   Configurable via the Home Assistant UI (no YAML configuration required).
 
 ## Installation
 
-1.  **Ensure Home Assistant is up to date.** (This component is developed against recent versions).
-2.  **Copy the Component Files:**
-    *   Copy the `custom_components/polen_madrid` directory (containing `__init__.py`, `sensor.py`, `const.py`, `manifest.json`, and `config_flow.py`) into your Home Assistant configuration's `custom_components` directory.
-    *   If you don't have a `custom_components` directory in your Home Assistant configuration folder, create it.
-3.  **Restart Home Assistant:**
-    *   Restart your Home Assistant instance to allow it to pick up the new component.
+1.  **HACS (Recommended):**
+    *   Ensure you have [HACS (Home Assistant Community Store)](https://hacs.xyz/) installed.
+    *   In HACS, go to **Integrations**.
+    *   Click the three dots in the top right and select **Custom repositories**.
+    *   In the "Repository" field, enter the URL of this GitHub repository: `https://github.com/atanarro/home-assistant-polen-madrid`
+    *   Select "Integration" as the category.
+    *   Click **ADD**.
+    *   Find the "Polen Madrid" integration in the HACS list and click **INSTALL**.
+    *   Follow the prompts to install the integration.
+
+2.  **Manual Installation:**
+    *   Copy the `custom_components/polen_madrid` directory into your Home Assistant configuration's `custom_components` directory.
+    *   If you don't have a `custom_components` directory, create it.
+2.  **Restart Home Assistant:**
+    *   Restart your Home Assistant instance to allow it to pick up the new integration.
 
 ## Configuration
 
-This integration can be configured through the UI:
+1.  **Add Integration:**
+    *   In Home Assistant, go to **Settings** -> **Devices & Services**.
+    *   Click the **+ ADD INTEGRATION** button in the bottom right corner.
+    *   Search for "Polen Madrid" and select it.
 
-Once the YAML entry has been processed (or if you remove the YAML entry after the first setup), you can manage the integration via the UI.
+2.  **Select Stations:**
+    *   You will be presented with a list of available pollen monitoring stations.
+    *   Select the stations you wish to monitor.
+    *   Click **SUBMIT**.
 
-*   Go to **Settings > Devices & Services**.
-*   Click **+ ADD INTEGRATION**.
-*   Search for "Polen Madrid" and follow the on-screen instructions (currently, no configuration options are presented, it will add directly).
+3.  **View Entities:**
+    *   The integration will create sensor entities for each selected station and pollen type.
+    *   These can be found in your entity list and added to dashboards.
 
-If you added via YAML, an instance should already appear here.
+## Options
 
-## Sensors
+After initial setup, you can change the selected stations:
 
-The integration will create multiple sensor entities, one for each pollen type at each measurement station. For example:
+1.  Go to **Settings** -> **Devices & Services**.
+2.  Find the "Polen Madrid" integration card.
+3.  Click on **CONFIGURE**.
+4.  Adjust your station selection and click **SUBMIT**.
 
-*   `sensor.polen_arganzuela_gramineas`
-*   `sensor.polen_coslada_platanus`
+## Troubleshooting
 
-Each sensor will have a state representing the pollen value (typically in grains/m³) and will include additional attributes such as:
-
-*   Pollen type
-*   Location name
-*   Pollen level (Bajo, Medio, Alto)
-*   Pollen level text (e.g., "Alto (>= 50)")
-*   Measurement date
-*   Thresholds (medium, high, very_high)
-*   Station ID and code
-*   Coordinates (UTM)
-*   Altitude
-*   Sensor height
-
-## Development
-
-*   **Data Update Interval**: Data is fetched every hour by default (defined by `SCAN_INTERVAL` in `sensor.py`).
-
-## Contributing
-
-Contributions are welcome! Please feel free to open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the `LICENSE.md` file for details.
-
-<!-- Shield Definitions -->
-[releases]: https://github.com/alvarotanarro/polen-madrid/releases
-[license]: https://github.com/alvarotanarro/polen-madrid/blob/main/LICENSE.md
-
-[releases-shield]: https://img.shields.io/github/release/alvarotanarro/polen-madrid.svg?style=for-the-badge
-[license-shield]: https://img.shields.io/github/license/alvarotanarro/polen-madrid.svg?style=for-the-badge 
+*   Ensure you have the latest version of the integration.
+*   Check the Home Assistant logs (Settings -> System -> Logs) for any errors related to `polen_madrid`.
+*   If you encounter issues, please [open an issue](https://github.com/atanarro/home-assistant-polen-madrid/issues) on GitHub.
