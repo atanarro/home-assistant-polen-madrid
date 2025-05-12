@@ -7,8 +7,7 @@ CONF_STATIONS = "stations"
 
 API_URL = (
     'https://idem.comunidad.madrid/geoserver3/wfs?version=2.0.0&request=GetFeature'
-    '&typeName=SPOL_V_CAPTADORES_GIS'
-)
+    '&typeName=SPOL_V_CAPTADORES_GIS')
 API_HEADERS = {
     "accept": "*/*",
     "cache-control": "no-cache",
@@ -24,8 +23,7 @@ API_DATA_PAYLOAD = (
     '450061.222543114%204423869.449032824%20496229.18762736%204440379.847142422%20'
     '458316.4215979129%204514370.890522472%20467488.864992134%204544945.701836541%20'
     '450672.7187693954%204558092.8707015915%3C%2FposList%3E%3C%2FLinearRing%3E%3C%2Fexterior%3E'
-    '%3C%2Fgml%3APolygon%3E%3C%2FIntersects%3E%3C%2FFilter%3E'
-)
+    '%3C%2Fgml%3APolygon%3E%3C%2FIntersects%3E%3C%2FFilter%3E')
 
 FIELD_MAPPING = {
     "NM_ID_CAPTADORES": "station_id",

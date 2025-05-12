@@ -10,24 +10,26 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.polen_madrid.const import DOMAIN, CONF_STATIONS
 
-# TODO: Add more comprehensive tests, mocking API responses and user interactions
+# TODO: Add more comprehensive tests, mocking API responses and user
+# interactions
 
 
 async def test_user_flow_minimum_fields(hass: HomeAssistant, mock_requests_post) -> None:
     """Test the user config flow with minimum fields."""
     # The mock_requests_post fixture will mock the call in _fetch_stations
-    # Ensure MOCK_RAW_API_RESPONSE in conftest.py provides data _fetch_stations can parse
-    
+    # Ensure MOCK_RAW_API_RESPONSE in conftest.py provides data
+    # _fetch_stations can parse
+
     # Initialize the config flow
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    
+
     # Since the mock provides data, we should get the form
     assert result["type"] == data_entry_flow.FlowResultType.FORM
     assert result["step_id"] == "user"
     assert not result.get("errors")
-    
+
     # Check that the mock was called by _fetch_stations
     mock_requests_post.assert_called_once()
 
@@ -42,7 +44,8 @@ async def test_user_flow_minimum_fields(hass: HomeAssistant, mock_requests_post)
 
     # Should create the entry
     assert result2["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result2["title"] == "Polen Madrid" # Default name or based on config
+    # Default name or based on config
+    assert result2["title"] == "Polen Madrid"
     assert result2["data"] == {
         CONF_STATIONS: ["28079016"],
     }
@@ -87,4 +90,4 @@ async def test_user_flow_minimum_fields(hass: HomeAssistant, mock_requests_post)
 # - No stations selected
 # - Invalid input
 # - API errors during validation (if applicable)
-# - Re-authentication flow (if applicable) 
+# - Re-authentication flow (if applicable)

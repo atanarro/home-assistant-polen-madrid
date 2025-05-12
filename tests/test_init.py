@@ -7,9 +7,9 @@ import requests  # Import requests for patching
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 # Remove async_setup_component if only testing entry setup
-# from homeassistant.setup import async_setup_component 
+# from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-from homeassistant.helpers.update_coordinator import UpdateFailed # Import UpdateFailed
+from homeassistant.helpers.update_coordinator import UpdateFailed  # Import UpdateFailed
 
 from custom_components.polen_madrid.const import DOMAIN, CONF_STATIONS
 # Import mock data if needed, or define simple mock structure
@@ -59,7 +59,7 @@ async def test_setup_entry(hass: HomeAssistant, mock_requests_post) -> None:
     assert entry.state == ConfigEntryState.LOADED
 
     # Coordinator is managed by the sensor platform, not stored directly in hass.data[DOMAIN]
-    # assert DOMAIN in hass.data 
+    # assert DOMAIN in hass.data
     # assert entry.entry_id in hass.data[DOMAIN]
     # assert "coordinator" in hass.data[DOMAIN][entry.entry_id]
 
@@ -81,7 +81,7 @@ async def test_unload_entry(hass: HomeAssistant, mock_requests_post) -> None:
     await hass.async_block_till_done()
 
     assert entry.state == ConfigEntryState.LOADED
-    mock_requests_post.assert_called() # Ensure setup called post
+    mock_requests_post.assert_called()  # Ensure setup called post
 
     # Unload the component
     assert await hass.config_entries.async_unload(entry.entry_id)
@@ -96,7 +96,7 @@ async def test_unload_entry(hass: HomeAssistant, mock_requests_post) -> None:
 
 async def test_setup_entry_fails_api_error(hass: HomeAssistant) -> None:
     """Test setup failure when the initial API call fails."""
-    # Note: This test doesn't use mock_requests_post fixture, 
+    # Note: This test doesn't use mock_requests_post fixture,
     # as we patch the coordinator method directly.
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -110,11 +110,13 @@ async def test_setup_entry_fails_api_error(hass: HomeAssistant) -> None:
         "custom_components.polen_madrid.sensor.PolenMadridDataUpdateCoordinator._async_update_data",
         side_effect=UpdateFailed("Simulated API Error"),
     ):
-        # Run setup. We expect ConfigEntryNotReady to be raised internally by first_refresh.
+        # Run setup. We expect ConfigEntryNotReady to be raised internally by
+        # first_refresh.
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
-    # Check that the entry state is SETUP_RETRY (standard behavior for ConfigEntryNotReady)
+    # Check that the entry state is SETUP_RETRY (standard behavior for
+    # ConfigEntryNotReady)
     assert entry.state == ConfigEntryState.SETUP_RETRY
 
     # We didn't use the requests mock here, so no need to assert calls on it.
@@ -123,4 +125,4 @@ async def test_setup_entry_fails_api_error(hass: HomeAssistant) -> None:
 
 # TODO:
 # - Add tests for specific platform forwarding if logic exists in __init__.py
-# - Test migration logic if versioning is implemented in config flow 
+# - Test migration logic if versioning is implemented in config flow

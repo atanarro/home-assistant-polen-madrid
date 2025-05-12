@@ -60,11 +60,13 @@ class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         def _blocking_fetch() -> dict[str, str] | None:
             try:
                 response = requests.post(
-                    API_URL, headers=API_HEADERS, data=API_DATA_PAYLOAD, timeout=10
-                )
+                    API_URL,
+                    headers=API_HEADERS,
+                    data=API_DATA_PAYLOAD,
+                    timeout=10)
                 response.raise_for_status()
                 json_data = response.json()
-                
+
                 stations: dict[str, str] = {}
                 features = json_data.get('features', [])
                 for feature in features:
@@ -73,16 +75,18 @@ class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     station_name = properties.get(RAW_STATION_NAME_KEY)
                     if station_id and station_name:
                         fixed_name = _fix_encoding_issue(station_name)
-                        # Ensure station_id is string for dict keys/HA select options
+                        # Ensure station_id is string for dict keys/HA select
+                        # options
                         stations[str(station_id)] = fixed_name
                 return stations
             except RequestException as e:
                 _LOGGER.error("Error fetching stations for config flow: %s", e)
                 return None
             except json.JSONDecodeError as e:
-                _LOGGER.error("Error decoding stations JSON for config flow: %s", e)
+                _LOGGER.error(
+                    "Error decoding stations JSON for config flow: %s", e)
                 return None
-            except Exception as e: # Catch any other unexpected errors
+            except Exception as e:  # Catch any other unexpected errors
                 _LOGGER.error("Unexpected error fetching stations: %s", e)
                 return None
 
@@ -100,30 +104,35 @@ class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "no_stations_selected"
             else:
                 _LOGGER.debug(
-                    "Creating config entry with selected stations: %s", user_input[CONF_STATIONS]
-                )
-                return self.async_create_entry(title="Polen Madrid", data=user_input)
+                    "Creating config entry with selected stations: %s",
+                    user_input[CONF_STATIONS])
+                return self.async_create_entry(
+                    title="Polen Madrid", data=user_input)
 
         # Fetch stations to show in the form
         stations = await self._fetch_stations()
 
-        if stations is None: # Error during fetch
+        if stations is None:  # Error during fetch
             errors["base"] = "fetch_stations_failed"
             # Show an empty form with an error, or abort. Aborting might be cleaner.
             # For now, show form with error message if we want user to retry.
             # Or, just abort if stations are critical for setup.
             # Let's allow showing the form with an error.
-            _LOGGER.error("Failed to fetch stations for user configuration step.")
+            _LOGGER.error(
+                "Failed to fetch stations for user configuration step.")
             # If we show a form, it won't have station options.
             # It's better to abort if we can't get stations
             return self.async_abort(reason="fetch_stations_failed")
 
-        if not stations: # No stations returned, even if fetch was successful
+        if not stations:  # No stations returned, even if fetch was successful
             _LOGGER.warning("No stations found from API.")
             return self.async_abort(reason="no_stations_found")
 
         # Sort stations by name for better UX
-        sorted_stations = dict(sorted(stations.items(), key=lambda item: item[1]))
+        sorted_stations = dict(
+            sorted(
+                stations.items(),
+                key=lambda item: item[1]))
 
         data_schema = vol.Schema({
             vol.Required(CONF_STATIONS): cv.multi_select(sorted_stations)
@@ -135,7 +144,7 @@ class PolenMadridConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={
                 "station_count": str(len(sorted_stations))
-            } # Optional: for translations
+            }  # Optional: for translations
         )
 
     @staticmethod
@@ -151,11 +160,12 @@ class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
-        self._stations: dict[str, str] | None = None # Cache fetched stations
+        self._stations: dict[str, str] | None = None  # Cache fetched stations
 
     async def _fetch_stations_for_options(self) -> bool:
         """Fetch and cache stations for options flow. Returns True on success."""
-        # For simplicity, directly using the structure of _fetch_stations from parent.
+        # For simplicity, directly using the structure of _fetch_stations from
+        # parent.
         if not RAW_STATION_ID_KEY or not RAW_STATION_NAME_KEY:
             _LOGGER.error(
                 "Raw keys for station ID or name could not be determined from FIELD_MAPPING (options)."
@@ -165,11 +175,13 @@ class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
         def _blocking_fetch() -> dict[str, str] | None:
             try:
                 response = requests.post(
-                    API_URL, headers=API_HEADERS, data=API_DATA_PAYLOAD, timeout=10
-                )
+                    API_URL,
+                    headers=API_HEADERS,
+                    data=API_DATA_PAYLOAD,
+                    timeout=10)
                 response.raise_for_status()
                 json_data = response.json()
-                
+
                 stations: dict[str, str] = {}
                 features = json_data.get('features', [])
                 for feature in features:
@@ -181,18 +193,24 @@ class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
                         stations[str(station_id)] = fixed_name
                 return stations
             except RequestException as e:
-                _LOGGER.error("Error fetching stations for options flow: %s", e)
+                _LOGGER.error(
+                    "Error fetching stations for options flow: %s", e)
                 return None
             except json.JSONDecodeError as e:
-                _LOGGER.error("Error decoding stations JSON for options flow: %s", e)
+                _LOGGER.error(
+                    "Error decoding stations JSON for options flow: %s", e)
                 return None
             except Exception as e:
-                _LOGGER.error("Unexpected error fetching stations for options: %s", e)
+                _LOGGER.error(
+                    "Unexpected error fetching stations for options: %s", e)
                 return None
 
         fetched_data = await self.hass.async_add_executor_job(_blocking_fetch)
         if fetched_data is not None:
-            self._stations = dict(sorted(fetched_data.items(), key=lambda item: item[1]))
+            self._stations = dict(
+                sorted(
+                    fetched_data.items(),
+                    key=lambda item: item[1]))
             return True
         return False
 
@@ -201,26 +219,28 @@ class PolenMadridOptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            if not user_input.get(CONF_STATIONS): # Check if list is empty
-                errors["base"] = "no_stations_selected_options" # A new error string
+            if not user_input.get(CONF_STATIONS):  # Check if list is empty
+                # A new error string
+                errors["base"] = "no_stations_selected_options"
             else:
                 _LOGGER.debug(
-                    "Updating options with selected stations: %s", user_input[CONF_STATIONS]
-                )
+                    "Updating options with selected stations: %s",
+                    user_input[CONF_STATIONS])
                 return self.async_create_entry(title="", data=user_input)
 
-        if self._stations is None: # Fetch only if not already fetched
+        if self._stations is None:  # Fetch only if not already fetched
             if not await self._fetch_stations_for_options():
                 # Failed to fetch stations, show error and abort or allow retry.
                 # For options, perhaps show current config and an error.
                 # Aborting might be simplest if stations can't be loaded.
                 return self.async_abort(reason="fetch_stations_failed_options")
 
-        if not self._stations: # No stations available from API
+        if not self._stations:  # No stations available from API
             return self.async_abort(reason="no_stations_found_options")
-            
+
         current_selection = self.config_entry.options.get(CONF_STATIONS, [])
-        # Ensure current_selection items are strings, as station IDs are stored as strings
+        # Ensure current_selection items are strings, as station IDs are stored
+        # as strings
         current_selection = [str(s) for s in current_selection]
 
         options_schema = vol.Schema({
