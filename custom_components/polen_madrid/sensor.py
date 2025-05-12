@@ -17,6 +17,7 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
+    ConfigEntryNotReady,
 )
 # from homeassistant.helpers import config_validation as cv # Unused import
 
@@ -39,8 +40,12 @@ def parse_api_response(json_data):
     transformed_data = []
     for feature in features:
         properties = feature.get('properties', {})
-        geometry = feature.get('geometry', {})
-        coordinates = geometry.get('coordinates', [None, None])
+        geometry = feature.get('geometry') # Let it be None if not present or null
+        
+        # Safely get coordinates only if geometry is not None
+        coordinates = [None, None]
+        if geometry and isinstance(geometry, dict):
+            coordinates = geometry.get('coordinates', [None, None])
 
         output_record = {}
         for source_field, target_field in FIELD_MAPPING.items():
@@ -99,6 +104,9 @@ async def async_setup_entry(
     """Set up Polen Madrid sensors from a config entry."""
     _LOGGER.debug("Setting up Polen Madrid sensor platform.")
     
+    # Retrieve the coordinator from hass.data (created in __init__.py)
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    
     # Get selected stations from config entry options or data
     selected_stations = entry.options.get(CONF_STATIONS, entry.data.get(CONF_STATIONS))
     if selected_stations is None: # Ensure it's a list if not found or explicitly None
@@ -114,19 +122,13 @@ async def async_setup_entry(
         async_add_entities([])
         return
 
-    coordinator = PolenMadridDataUpdateCoordinator(hass)
-    await coordinator.async_config_entry_first_refresh()
-    _LOGGER.debug(
-        "Coordinator data after first refresh: %s records",
-        len(coordinator.data) if coordinator.data else 0
-    )
-
-    sensors = []
-    if coordinator.data:
+    # Check if coordinator data is available (it should be, if __init__ succeeded)
+    if coordinator.last_update_success and coordinator.data:
         _LOGGER.debug(
-            "Coordinator.data is available. Processing %s records for selected stations.",
+            "Coordinator data is available. Processing %s records for selected stations.",
             len(coordinator.data)
         )
+        sensors = []
         for _, record in coordinator.data.items():
             station_id = record.get('station_id')
             
@@ -154,7 +156,7 @@ async def async_setup_entry(
                 )
     else:
         _LOGGER.warning(
-            "Coordinator.data is None or empty after refresh. No sensors will be created."
+            "Coordinator data is None or empty after refresh. No sensors will be created."
         )
 
     if sensors:

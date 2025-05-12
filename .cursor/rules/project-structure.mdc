@@ -1,0 +1,52 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Polen Madrid Custom Component Structure
+
+This document outlines the structure and purpose of files within the `polen_madrid` Home Assistant custom component.
+
+1.  **`custom_components/polen_madrid/`**:
+    *   Root directory for the integration.
+    *   Follows Home Assistant's standard structure for custom components.
+
+2.  **`__init__.py`**:
+    *   Package indicator for Python.
+    *   Contains core setup logic (`async_setup_entry`, `async_unload_entry`).
+    *   Handles loading/unloading the integration.
+    *   Coordinates the setup of platforms (e.g., sensor).
+
+3.  **`manifest.json`**:
+    *   Provides metadata to Home Assistant.
+    *   Includes domain (`polen_madrid`), name, documentation, code owner, dependencies (`requests`), version.
+
+4.  **`const.py`**:
+    *   Stores constants used throughout the integration.
+    *   Includes domain, API details (`API_URL`), config keys (`CONF_STATIONS`), defaults (`SCAN_INTERVAL`), mappings (`FIELD_MAPPING`).
+    *   Centralizes configuration and avoids hardcoding.
+
+5.  **`config_flow.py`**:
+    *   Manages the configuration process via the Home Assistant UI.
+    *   Defines steps for user setup (e.g., selecting stations via `CONF_STATIONS`).
+    *   Handles user input, validation, and storing the configuration entry.
+
+6.  **`sensor.py`**:
+    *   Defines the sensor entities provided by the integration.
+    *   **`PolenMadridDataUpdateCoordinator`**:
+        *   Manages fetching data periodically from the API.
+        *   Uses `requests` in an executor job for non-blocking HTTP calls.
+        *   Handles API errors and update intervals (`SCAN_INTERVAL`).
+    *   **`PolenMadridSensor`**:
+        *   Represents a specific pollen type sensor for a specific station.
+        *   Inherits from `CoordinatorEntity` and `SensorEntity`.
+    *   **Helper Functions**:
+        *   `parse_api_response`: Parses raw API JSON.
+        *   `fix_encoding_issue`: Corrects potential text encoding problems.
+        *   `get_pollen_level_details`: Determines pollen level categories (Low, Medium, High).
+    *   **`async_setup_entry`**:
+        *   Called by `__init__.py` during setup.
+        *   Creates `PolenMadridSensor` instances based on user configuration (selected stations) and fetched data.
+        *   Filters sensors to only include those for configured stations.
+
+**Summary**: The integration uses a standard Home Assistant structure, separating concerns into dedicated files for configuration, constants, core logic, platform definitions (sensors), and metadata. `sensor.py` focuses on data acquisition, processing, and representation within Home Assistant.
